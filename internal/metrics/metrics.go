@@ -26,4 +26,3 @@ var (
 func Init() {
 	prometheus.MustRegister(RequestCount, RequestDuration)
 }
-
