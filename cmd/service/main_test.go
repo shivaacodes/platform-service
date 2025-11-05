@@ -1,6 +1,7 @@
 package main
 
 import (
+"context"
 "net/http"
 "net/http/httptest"
 "testing"
@@ -12,7 +13,7 @@ type MockCacheClient struct {
 GetFunc   func(key string) (string, error)
 SetFunc   func(key string, value interface{}, ttl time.Duration) error
 CloseFunc func() error
-PingFunc  func() error
+PingFunc  func(ctx context.Context) error
 }
 
 func (m *MockCacheClient) Get(key string) (string, error) {
@@ -27,8 +28,8 @@ func (m *MockCacheClient) Close() error {
 return m.CloseFunc()
 }
 
-func (m *MockCacheClient) Ping() error {
-return m.PingFunc()
+func (m *MockCacheClient) Ping(ctx context.Context) error {
+return m.PingFunc(ctx)
 }
 
 func TestDataHandler(t *testing.T) {
@@ -42,7 +43,7 @@ return "", nil // Simulate a cache miss.
 mockCache.SetFunc = func(key string, value interface{}, ttl time.Duration) error {
 return nil
 }
-mockCache.PingFunc = func() error {
+mockCache.PingFunc = func(ctx context.Context) error {
 return nil
 }
 
