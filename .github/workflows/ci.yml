@@ -45,9 +45,7 @@ jobs:
       - name: Run integration tests
         run: pytest -v tests/integration
 
-      # optional performance smoke
       - name: Quick load test (10s)
         run: |
           pip install locust
           locust -f tests/load/locustfile.py --host http://localhost:8080 -u 20 -r 5 --run-time 10s --headless --csv load_ci
-
