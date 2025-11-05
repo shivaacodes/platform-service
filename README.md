@@ -1,41 +1,72 @@
-# Platform Service
+# platform-service
 
-## Project Summary
+[![Go 1.21+](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org)
 
-Platform Service — a simple HTTP API that aggregates data, caches responses, exposes metrics, auto-scales behind a load balancer, and is deployable via Terraform + container registry.
+A production-grade Go microservice with Redis caching, Prometheus metrics, and automated CI/CD.
 
-## Tech Stack
+---
 
-### Service Core
+## Architecture
 
-* **Go** - HTTP server, concurrency, client libs
+**Stack:**
 
-### Glue / Automation / Tests
+- **Go HTTP server** : `/api/v1/data`, `/healthz`, `/readyz`, `/metrics`
+- **Redis** : cache-aside pattern with configurable TTL
+- **Prometheus + Grafana** : metrics and visualization
+- **Python tests** : integration and load testing (pytest + locust)
+- **GitHub Actions** : automated build, test, and deploy
 
-* **Python** - Integration tests, deployment helpers, warmup scripts
+**Architecture Diagram:**
 
-### Cache
+![Architecture Diagram](docs/architecture.png)
 
-* **Redis** - Cache-aside + TTL
+## Quick Start
 
-### Packaging
+```bash
+# Clone and start
+git clone https://github.com/shivaacodes/platform-service.git
+cd platform-service
+docker compose up --build
+```
 
-* **Docker** - Multi-stage builds
+**Endpoints:**
 
-### CI/CD
+- <http://localhost:8080/api/v1/data> : cached data
+- <http://localhost:8080/readyz> : health check (validates Redis)
+- <http://localhost:8080/metrics> : Prometheus metrics
+- <http://localhost:3000> : Grafana dashboard
 
-* **GitHub Actions** - Build, test, push
+**Stop:**
 
-### Infrastructure as Code
+```bash
 
-* **Terraform** - Provision one small VM or managed container service + Redis
-* **Alternative**: Render/Fly for simplicity
+docker compose down
+```
 
-### Observability
+---
 
-* **Prometheus** client (Go) - Expose `/metrics` endpoint
-* **Grafana** - Simple dashboard or use hosted metrics
+## Configuration
 
-### Optional
+Set via environment variables or `.env` file:
 
-* **Nginx** or **HAProxy** - For local load balancer tests
+```env
+PORT=8080
+REDIS_ADDR=redis:6379
+CACHE_TTL=300
+LOG_LEVEL=info
+```
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push:
+
+1. **Build & Test** — Go build + unit tests
+2. **Integration** — Start Redis + run Python tests
+3. **Load Test** — Locust performance validation
+4. **Artifacts** — Upload test reports and metrics
+
+**Runtime:** ~3–4 minutes per run on Ubuntu runners.
+
+---
